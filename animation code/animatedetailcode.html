@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ultimate Mobile Accordion</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --text: #111;
+      --card: #fff;
+      --border: #ddd;
+      --accent: #333;
+    }
+
+    [data-theme='dark'] {
+      --bg: #121212;
+      --text: #eee;
+      --card: #1e1e1e;
+      --border: #333;
+      --accent: #ccc;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--accent);
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .accordion {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    details {
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+      border-radius: 8px;
+      background: var(--card);
+      overflow: hidden;
+      transition: border-color 0.3s, background 0.3s;
+      touch-action: manipulation;
+    }
+
+    summary {
+      padding: 16px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+    }
+
+    summary::after {
+      content: "▼";
+      position: absolute;
+      right: 16px;
+      transition: transform 0.3s;
+    }
+
+    details[open] summary::after {
+      transform: rotate(180deg);
+    }
+
+    .accordion-content {
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    @media (min-width: 600px) {
+      .accordion {
+        max-width: 600px;
+      }
+
+      summary {
+        font-size: 1.25rem;
+      }
+
+      .accordion-content {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<button class="theme-toggle" id="toggle-theme">Toggle Theme</button>
+
+<div class="accordion">
+  <details>
+    <summary>What is HTML?</summary>
+    <div class="accordion-content">
+      HTML is the standard language for creating and structuring web content.
+    </div>
+  </details>
+
+  <details>
+    <summary>Why mobile-first design?</summary>
+    <div class="accordion-content">
+      Mobile-first ensures the best experience on small screens first, then scales up gracefully.
+    </div>
+  </details>
+
+  <details>
+    <summary>How does dark mode work?</summary>
+    <div class="accordion-content">
+      It uses CSS variables and media queries to respond to user preferences or manual toggles.
+    </div>
+  </details>
+</div>
+
+<script>
+  // Accordion: one-at-a-time
+  const all = document.querySelectorAll('.accordion details');
+  all.forEach(d =>
+    d.addEventListener('toggle', () => {
+      if (d.open) {
+        all.forEach(el => el !== d && el.removeAttribute('open'));
+      }
+    })
+  );
+
+  // Theme Toggle with localStorage
+  const html = document.documentElement;
+  const btn = document.getElementById('toggle-theme');
+
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      html.setAttribute('data-theme', 'dark');
+    } else {
+      html.removeAttribute('data-theme');
+    }
+  }
+
+  btn.addEventListener('click', () => {
+    const current = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(current);
+    localStorage.setItem('theme', current);
+  });
+
+  // Load saved theme
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) applyTheme(savedTheme);
+
+  // Swipe Gesture: Toggle accordion item
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  all.forEach(item => {
+    item.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+
+    item.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchEndX - touchStartX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          // Swipe Right: Close
+          item.removeAttribute('open');
+        } else {
+          // Swipe Left: Open this, close others
+          all.forEach(el => el !== item && el.removeAttribute('open'));
+          item.setAttribute('open', '');
+        }
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
